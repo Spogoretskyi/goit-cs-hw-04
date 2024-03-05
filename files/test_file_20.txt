@@ -1,0 +1,3 @@
+GitHub (/ˈɡɪthʌb/[a]) is a developer platform that allows developers to create, store, manage and share their code. It uses Git software, providing the distributed version control of Git plus access control, bug tracking, software feature requests, task management, continuous integration, and wikis for every project.[7] Headquartered in California, it has been a subsidiary of Microsoft since 2018.[8]
+
+It is commonly used to host open source software development projects.[9] As of January 2023, GitHub reported having over 100 million developers[10] and more than 420 million repositories,[11] including at least 28 million public repositories.[12] It is the world's largest source code host as of June 2023.

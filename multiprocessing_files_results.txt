@@ -9,4 +9,4 @@ Keyword 'guitar' found in:
 Keyword 'JSON' found in:
   - files\Folder_3\test_file_11.txt, line 1
   - files\Folder_3\test_file_12.txt, line 1
-Execution time: 0.4534435272216797 seconds
+Execution time: 0.45949673652648926 seconds

@@ -4,15 +4,15 @@ import time
 from pathlib import Path
 from shutil import copyfile
 from threading import Thread
-from files_processors import ThreadingFiles
+from files_processors import ThreadingFiles, MultiprocessingFiles
 
 
-# parser = argparse.ArgumentParser(description="Sorting files")
-# parser.add_argument("--source", "-s", required=True, help="Source dir")
-# parser.add_argument("--output", "-o", help="Output dir", default="destination")
-# args = vars(parser.parse_args())
-# source = Path(args["source"])
-# output = Path(args["output"])
+parser = argparse.ArgumentParser(description="Sorting files")
+parser.add_argument("--source", "-s", required=True, help="Source dir")
+parser.add_argument("--output", "-o", help="Output dir", default="destination")
+args = vars(parser.parse_args())
+source = Path(args["source"])
+output = Path(args["output"])
 
 
 # Отримаємо папки
@@ -35,7 +35,7 @@ def print_results(results):
 
 
 # Записуємо результати пошуку у файл
-def write_output(results, execution_time, output_path):
+def write_output(logger, results, execution_time, output_path):
     try:
         with open(output_path, "w") as file:
             for key, value in results.items():
@@ -49,27 +49,53 @@ def write_output(results, execution_time, output_path):
 
 
 def main():
+    # You can hardcode a source, just comment all parser instances
+    # Hardcoded path source = Path(".\\files\\")
+    # source = Path(".\\files\\")
+    # You can hardcode an output, just comment all parser instances
+    # Hardcoded path output = Path(".\\output\\")
+    # output = Path(".\\")
+
     logger = logging.getLogger(__name__)
     format = "%(threadName)s %(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
-    # source hardcoded or from args = vars(parser.parse_args())
-    source = Path(".\\files\\")
-    folders = [source] + get_folders(source)
-    print(folders)
-
+    folders = get_folders(source)
     keywords = ("python", "science", "guitar", "computer", "JSON", "cluster")
 
+    # -- Threading --
     start_time = time.time()
-
     threading_files = ThreadingFiles(logger, folders, 5)
-    result = threading_files.process_files(keywords)
+    results = threading_files.process_files(keywords)
 
     end_time = time.time()
     execution_time = end_time - start_time
 
-    print_results(result)
-    # write_output(result, execution_time, "output_path.txt")
+    print(f"--Threading--")
+    print_results(results)
+    print(f"Execution time: {execution_time} seconds")
+    write_output(
+        logger, results, execution_time, output.joinpath("threading_files_results.txt")
+    )
+
+    print("")
+
+    # -- Multiprocessing --
+    start_time = time.time()
+    multiprocessing_files = MultiprocessingFiles(logger, folders, 5)
+    results = multiprocessing_files.process_files(keywords)
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+
+    print(f"--Multiprocessing--")
+    print_results(results)
+    write_output(
+        logger,
+        results,
+        execution_time,
+        output.joinpath("multiprocessing_files_results.txt"),
+    )
     print(f"Execution time: {execution_time} seconds")
 
 

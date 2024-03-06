@@ -1,0 +1,12 @@
+Keyword 'science' found in:
+  - files\Folder_4\test_file_15.txt, line 1
+  - files\Folder_4\test_file_16.txt, line 1
+Keyword 'guitar' found in:
+  - files\Folder_3\test_file_9.txt, line 1
+Keyword 'computer' found in:
+  - files\Folder_4\test_file_15.txt, line 1
+  - files\Folder_4\test_file_16.txt, line 1
+Keyword 'JSON' found in:
+  - files\Folder_3\test_file_11.txt, line 1
+  - files\Folder_3\test_file_12.txt, line 1
+Execution time: 0.02270817756652832 seconds

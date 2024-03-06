@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from threading import Thread, Semaphore
+from multiprocessing import JoinableQueue, Process, Lock, Manager
 
 
 class BaseThreadingFiles:
@@ -40,13 +41,14 @@ class ThreadingFiles(BaseThreadingFiles):
 
     # Оброблюємо файли
     def process_files(self, keywords):
+        self.logger.info(f"{self.__class__.__name__}: process files.")
         results = {}
         threads = []
         semaphore = Semaphore(self.pool_amount)
 
         for folder in self.folders:
             th = Thread(
-                target=self.__get_results,
+                target=self.get_results,
                 args=(semaphore, folder, keywords, results),
             )
             th.start()
@@ -58,7 +60,7 @@ class ThreadingFiles(BaseThreadingFiles):
         return results
 
     # Отримаємо результати пошуку
-    def __get_results(self, semaphore, directory, keywords, results):
+    def get_results(self, semaphore, directory, keywords, results):
         semaphore.acquire()
         try:
             for keyword in keywords:
@@ -67,3 +69,59 @@ class ThreadingFiles(BaseThreadingFiles):
                     results.update(result)
         finally:
             semaphore.release()
+
+
+class MultiprocessingFiles(BaseThreadingFiles):
+    def __init__(self, logger, folders, queue_length):
+        super().__init__(logger)
+        self.folders = folders
+        self.queue_length = queue_length
+
+    # Оброблюємо файли
+    def process_files(self, keywords):
+        self.logger.info(f"{self.__class__.__name__}: process files.")
+        results = Manager().dict()
+        processes = []
+        joinable_queue = JoinableQueue()
+
+        for folder in self.folders:
+            joinable_queue.put(folder)
+
+        for _ in range(len(self.folders)):
+            process = Process(
+                target=self.get_results,
+                args=(joinable_queue, keywords, results),
+            )
+            process.start()
+            processes.append(process)
+
+        joinable_queue.join()
+
+        for process in processes:
+            process.join()
+
+        return dict(results)
+
+    # Отримаємо результати пошуку
+    def get_results(self, joinable_queue, keywords, results):
+        lock = Lock()
+        local_results = {}
+        try:
+
+            directory = joinable_queue.get()
+            for keyword in keywords:
+                result = self.search_keyword_in_directory(keyword, directory)
+                if result:
+                    self.update_Local_results(result, local_results)
+        finally:
+            joinable_queue.task_done()
+            with lock:
+                results.update(local_results)
+
+    @staticmethod
+    def update_Local_results(result, local_results):
+        for key, value in result.items():
+            if key in local_results:
+                local_results[key].extend(value)
+            else:
+                local_results[key] = value
